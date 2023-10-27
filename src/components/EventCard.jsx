@@ -89,7 +89,7 @@ export default function EventCard() {
     <div className="bg-white shadow-md mt-8 w-4/5 ml-auto mr-8 rounded-lg">
         <div>
             {/* Image gallery */}
-            <div className="mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-1 lg:px-8">
+            <div className="mx-auto mt-6 max-w-2xl lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-1">
                 <div className="aspect-h-4 aspect-w-3 hidden overflow-hidden lg:block">
                     <img
                         src={product.images[0].src}
@@ -151,13 +151,46 @@ export default function EventCard() {
                             </div>
                             <p className="sr-only">{reviews.average} out of 5 stars</p>
                             <a href={reviews.href} className="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                {reviews.totalCount} reviews 2
+                                {reviews.totalCount} reviews
                             </a>
                         </div>
                     </div>
-                </div>
+          </div>
+
+          <div className="py-10 lg:col-span-2 lg:col-start-1 lg:border-r lg:border-gray-200 lg:pb-16 lg:pr-8 lg:pt-6">
+            {/* Description and details */}
+            <div>
+              <h3 className="sr-only">Description</h3>
+
+              <div className="space-y-6">
+                <p className="text-base text-gray-900">{product.description}</p>
+              </div>
             </div>
+
+            <div className="mt-10">
+              <h3 className="text-sm font-medium text-gray-900">Highlights</h3>
+
+              <div className="mt-4">
+                <ul role="list" className="list-disc space-y-2 pl-4 text-sm">
+                  {product.highlights.map((highlight) => (
+                    <li key={highlight} className="text-gray-400">
+                      <span className="text-gray-600">{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-10">
+              <h2 className="text-sm font-medium text-gray-900">Details</h2>
+
+              <div className="mt-4 space-y-6">
+                <p className="text-sm text-gray-600">{product.details}</p>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
   )
 }

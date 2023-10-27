@@ -1,0 +1,56 @@
+[
+    {
+        "date": "Febrero 16, 2024",
+        "level": "Moderado",
+        "title": "Cordillera Trail",
+        "location": "San Antonio del Tequendama y Parque Natural Chicaque. - Cundinamarca",
+        "distances": [
+            {
+                "long": "21"
+            },
+            {
+                "long": "10"
+            },
+            {
+                "long": "5"
+            },
+            {
+                "long": "2"
+            }
+        ],
+        "organizer": "Aire Libre y Aventura"
+    },
+    {
+        "date": "Febrero 14, 2024",
+        "level": "Fácil",
+        "title": "Cordillera ",
+        "location": "Parque Natural Chicaque. - Cundinamarca",
+        "distances": [
+            {
+                "long": "42"
+            },
+            {
+                "long": "24"
+            },
+            {
+                "long": "10"
+            }
+        ],
+        "organizer": "Aire"
+    },
+    {
+        "date": "Febrero 22, 2024",
+        "level": "Dificil",
+        "title": "Cordillera Trail 2",
+        "location": "Cundinamarca",
+        "distances": [
+            {
+                "long": "80"
+            },
+            {
+                "long": "42"
+            }
+        ],
+        "organizer": "Aire Libre"
+    }
+]

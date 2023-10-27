@@ -1,0 +1,15 @@
+.slick-slider {
+    .slick-prev:before, .slick-next:before {
+        color: #000;
+        @media (max-width: 768px) {
+            display: none;
+        }
+    }
+    .slick-arrow {
+        &.slick-prev, &.slick-next {
+            @media (max-width: 768px) {
+                display: none!important;
+            }
+        }
+    }    
+}
