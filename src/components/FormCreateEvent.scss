@@ -1,0 +1,32 @@
+.react-datepicker-wrapper{
+    width: 100%;
+    .react-datepicker__input-container {
+        display: flex;
+        align-items: center;
+        .react-datepicker__calendar-icon  {
+            padding-top: 16px;
+        }
+        .datapicker-custom {
+            border-radius: 6px;
+            border: 1px solid rgb(209 213 219);
+            padding: 7px 12px 7px 30px;
+            margin-top: 10px;
+            color: rgb(17 24 39);
+            width: 100%;
+            font-size: 0.875rem;
+        }
+    }
+}
+
+.btn-add-form {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #cbd5e1!important;
+    border-radius: 4px;
+    svg {
+        width: 18px;
+        margin-left: auto;
+    }
+}

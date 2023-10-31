@@ -48,18 +48,6 @@ const EventCardComponent = (props) => {
                                         <h4 className='text-base font-semibold text-gray-900'>{distance}k</h4>
                                     </div>
                                 ))}
-                                {/* // <div className="flex flex-col justify-center items-center rounded px-3 py-1 border border-gray-200">
-                                //     <h4 className='text-base font-semibold text-gray-900'>21k</h4>
-                                // </div>
-                                // <div className="flex flex-col justify-center items-center rounded px-3 py-1 border border-gray-200">
-                                //     <h4 className='text-base font-semibold text-gray-900'>10k</h4>
-                                // </div>
-                                // <div className="flex flex-col justify-center items-center rounded px-3 py-1 border border-gray-200">
-                                //     <h4 className='text-base font-semibold text-gray-900'>5k</h4>
-                                // </div>
-                                // <div className="flex flex-col justify-center items-center rounded px-3 py-1 border border-gray-200">
-                                //     <h4 className='text-base font-semibold text-gray-900'>2k</h4>
-                                // </div> */}
                             </div>
                         </div>                        
                         {/* <p className="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">Cordillera Trail Futuro regresa para celebrar su décima edición, invitando a los participantes a desafiar los senderos y las montañas de la región del Tequendama, culminando en el bosque de niebla del Parque Natural Chicaque. Una experiencia única que año tras año atrae a los mejores corredores a superar sus tiempos en una ruta de otro nivel.</p> */}
