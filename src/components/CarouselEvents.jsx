@@ -9,7 +9,7 @@ import { db } from "../firebase/config"
 
 const CarouselEvents = () => {
 
-    const [ windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [ windowWidth, setWindowWidth ] = useState(window.innerWidth);
     const [ eventList, setEventList ] = useState([])
 
     useEffect(() => {
@@ -20,6 +20,7 @@ const CarouselEvents = () => {
 		window.addEventListener('resize', handleResize);
 
         const eventRef = collection(db, "events");
+        // const eventRef = db.collection("events");
         getDocs(eventRef)
             .then((resp) => {
                 console.log("DATABASE", resp.docs);
@@ -27,13 +28,15 @@ const CarouselEvents = () => {
                     return { ...doc.data(), id: doc.id }
                 })
                 setEventList(list)
-            })        
+            })  
 
 		return () => {
 			window.removeEventListener('resize', handleResize);
 		};        
 
-	}, [windowWidth]);  
+	}, [windowWidth]); 
+
+    
 
     console.log("EVENT LIST", eventList)
 
@@ -93,18 +96,16 @@ const CarouselEvents = () => {
         }
     ]
     return (
-            <div>
-              <h2> Multiple items </h2>
-              <Slider {...settings}>
+        <div>
+            <h2> Multiple items </h2>
+            <Slider {...settings}>
                 {
-                    eventList.map((item, index) => (
-                        <div>
-                            <EventCardComponent key={index} eventList={item}/>
-                        </div>
+                    eventList.length > 0 && eventList.map((item, index) => (
+                        <EventCardComponent key={item.id} eventList={item}/>
                     ))
                 }                
-              </Slider>
-            </div>
+            </Slider>
+        </div>
     )
 }
 export default CarouselEvents

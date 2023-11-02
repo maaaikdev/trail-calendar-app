@@ -6,6 +6,9 @@ import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import "./FormCreateEvent.scss"
 import FormDistance from './FormDistance';
+import { collection, addDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { db, storage } from "../firebase/config" 
 
 const people = [
     {
@@ -54,62 +57,164 @@ const FormCreateEvent = (props) => {
     const [startDate, setStartDate] = useState(new Date());
     const [selected, setSelected] = useState(people[0]);
     const [selectedCategory, setSelectedCategory] = useState(category[0]);
-
     const [showNestedForm, setShowNestedForm] = useState(false);
-    const [nestedFormValue, setNestedFormValue] = useState('');
-
-    const [formularios, setFormularios] = useState([]);
+    const [file, setFile] = useState(null);
+    const [showFile, setShowFile] = useState(null);
+    const [logoFile, setLogoFile] = useState(null);
+    const [showLogoFile, setShowLogoFile] = useState(null);
+    const [formDistance, setFormDistance] = useState([]);
+    const [eventForm, setEventForm] = useState({
+        id: crypto.randomUUID(),
+        date: "",
+        level: "",
+        title: "",
+        category: "",
+        month: "",
+        mainImg: "",
+        logoEvent: "",
+        lon: "",
+        lat: "", 
+        location: "",
+        description: "",
+        edition: "",
+        distances: [],        
+        organizer: "",
+        webEvent: "",
+        emailEvent: "",
+        instagramEvent: "",
+        phoneEvent: 0
+    });
+    const[distances, setDistances] = useState([])
 
     const { register, handleSubmit } = useForm();
 
-    const send = (data) => {
-
+    const send = async(data) => {
+        console.log("DATA BEFORE FORM", data)
         const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const fecha = new Date(startDate);
-        const mes = meses[fecha.getMonth()]; // Obtener el nombre del mes
-        console.log("El mes es: " + mes);
+        const mes = meses[fecha.getMonth()];
 
-        const event = {
+        const eventFormContent = {
+            id: crypto.randomUUID(),
+            date: fecha,
             title: data.nameEvent,
-            date: mes,
             level: selected.name,
             category: selectedCategory.name,
-            description: data.description
+            month: mes, 
+            mainImg: file,
+            logoEvent: logoFile,
+            long: "",
+            lat:"",
+            location: data.location,
+            description: data.description,
+            distances: distances,
+            edition: data.edition,
+            organizer: data.organizer,
+            webEvent: data.webEvent,
+            emailEvent: data.emailEvent,
+            instagramEvent: data.instagramEvent,
+            phoneEvent: data.phoneEvent
+        };
+        console.log("DATA ------> 3", eventFormContent);
 
-        }
-        console.log("FORM", event);
+        try {
+            await addDoc(collection(db, "events"),{
+                ...eventFormContent
+            })
+        } catch (error) {
+            console.log("Error catch", error)
+        }    
     }
 
     function classNames(...classes) {
         return classes.filter(Boolean).join(' ')
     }
 
-    console.log("DATE", startDate)
+    // Hero Image
+    const handleUploadFile = async (e) => {
+        const selectedFile = e.target.files[0];
 
-    const toggleNestedForm = () => {
-        setShowNestedForm(!showNestedForm);
+        const refImgFile = ref(storage, `eventImages/${selectedFile.name}`);
+        await uploadBytes(refImgFile, selectedFile);
+        const resultImg = await getDownloadURL(refImgFile)
+        setFile(resultImg)
+
+        const imagenURL = URL.createObjectURL(selectedFile);
+        setShowFile(imagenURL);
     }
 
-    const handleNestedFormChange = () => {
-        setFormularios([{
-            long: "",
-            averageTime: "",
-            Ascent: "",
-            Descent: "",
-            Uphill: "",
-            Downhill: "",
-            highestPoint: "",
-            LowestPoint: "",
-            EstimatedAverageSpeed: "",
-            averageInclination: "",
-            TechnicalDifficulty: 0,
-            FitnessRequired: 0,
-            gpx: ""
-        }]);
+    const handleDeleteImage = () => {
+        setShowFile(null)
     }
 
-    console.log("ADD FORM", formularios)
+    const handleDragOver = (e) => {
+        e.preventDefault();
+    };
+    
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        const selectedFile = e.dataTransfer.files[0];
 
+        const refImgFile = ref(storage, `eventImages/${selectedFile.name}`);
+        await uploadBytes(refImgFile, selectedFile);
+        const resultImg = await getDownloadURL(refImgFile)
+        setFile(resultImg);
+
+        const imagenURL = URL.createObjectURL(selectedFile);
+        setShowFile(imagenURL);
+    };
+     // Hero Image
+
+     // Logo Image
+    const handleUploadLogoFile = async (e) => {
+        const selectedFile = e.target.files[0];
+
+        const refImgFile = ref(storage, `logoEvents/${selectedFile.name}`);
+        await uploadBytes(refImgFile, selectedFile);
+        const resultImg = await getDownloadURL(refImgFile)
+        setLogoFile(resultImg)
+
+        const imagenURL = URL.createObjectURL(selectedFile);
+        setShowLogoFile(imagenURL);
+    }
+
+    const handleDeleteLogoImage = () => {
+        setShowLogoFile(null)
+    }
+
+    const handleDragOverLogo = (e) => {
+        e.preventDefault();
+    };
+    
+    const handleDropLogo = async (e) => {
+        e.preventDefault();
+        const selectedFile = e.dataTransfer.files[0];
+
+        const refImgFile = ref(storage, `logoEvents/${selectedFile.name}`);
+        await uploadBytes(refImgFile, selectedFile);
+        const resultImg = await getDownloadURL(refImgFile)
+        setLogoFile(resultImg);
+
+        const imagenURL = URL.createObjectURL(selectedFile);
+        setShowLogoFile(imagenURL);
+    };
+     // Logo Image
+
+    const getDataFormDistance = (data) => {
+        const temp = [...distances];
+        temp.push(data);        
+        setDistances(temp)
+    }
+
+    const addComponents = () => {
+        const newKey = formDistance.length; 
+        setFormDistance([...formDistance, <FormDistance key={newKey} deleteComponent={() => deleteComponent(newKey)} dataFormDistance={getDataFormDistance} />]);
+    };
+
+    const deleteComponent = (key) => {
+        const newComponent = formDistance.filter((component) => component.key !== key);
+        setFormDistance(newComponent);
+    };
 
     return (
         <div className="isolate bg-white px-6 py-24 sm:py-32 text-left lg:px-8">
@@ -293,7 +398,7 @@ const FormCreateEvent = (props) => {
                                 />
                             </div>
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-4">
                             <label htmlFor="dateEvent" className="block text-sm font-semibold leading-6 text-gray-900">Fecha del evento</label>
                             <DatePicker
                                 showIcon
@@ -325,7 +430,7 @@ const FormCreateEvent = (props) => {
                                 className="datapicker-custom"
                             />
                         </div>
-                        <div className="col-span-6">
+                        <div className="col-span-4">
                             <label htmlFor="organizer" className="block text-sm font-semibold leading-6 text-gray-900">Organizador del evento</label>
                             <div className="mt-2.5">
                                 <input 
@@ -339,39 +444,184 @@ const FormCreateEvent = (props) => {
                                 />
                             </div>
                         </div>
-                        <div className="col-span-full">
+                        <div className="col-span-4">
+                            <label htmlFor="edition" className="block text-sm font-semibold leading-6 text-gray-900">No. Edición</label>
+                            <div className="mt-2.5">
+                                <input 
+                                    type="number" 
+                                    name="edition" 
+                                    id="edition" 
+                                    placeholder="Edición del evento" 
+                                    autoComplete="Edición del evento"
+                                    {...register("edition")}
+                                    className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
+                                />
+                            </div>
+                        </div>
+                        <div className="col-span-6">
                             <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">Imágenes evento</label>
-                            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                                <div className="text-center">
-                                    <svg className="mx-auto h-12 w-12 text-gray-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
-                                    </svg>
-                                    <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                                        <label htmlFor="file-upload" className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500">
-                                            <span>Upload a file</span>
-                                            <input id="file-upload" name="file-upload" type="file" className="sr-only" />
-                                        </label>
-                                        <p className="pl-1">or drag and drop</p>
-                                    </div>
-                                    <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+                            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10" onDrop={handleDrop} onDragOver={handleDragOver}>
+                                <div className="text-center">                                    
+                                    {showFile ? (
+                                        <>
+                                            <img src={showFile} alt="Imagen cargada" className="w-32 h-32 object-cover border border-gray-300" />
+                                            <button onClick={handleDeleteImage}>Delete image</button>
+                                        </>                                        
+                                    ) : (
+                                        <>
+                                        <svg className="mx-auto h-12 w-12 text-gray-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                                        </svg>
+                                            <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                                                <label 
+                                                    htmlFor="file-upload" 
+                                                    className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500">
+                                                    <span>Upload a file</span>
+                                                    <input 
+                                                        id="file-upload" 
+                                                        name="file-upload" 
+                                                        type="file" 
+                                                        accept=".jpg, .jpeg, .png" 
+                                                        className="sr-only"                                                         
+                                                        onChange={handleUploadFile}
+                                                    />
+                                                </label>
+                                                <p className="pl-1">or drag and drop</p>
+                                            </div>
+                                            <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+                                        </>                                        
+                                    )}                                    
                                 </div>
                             </div>
                         </div>
-                        <div className="col-span-12">
-                            <button type="button" onClick={toggleNestedForm} className='btn-add-form text-sm font-semibold'>
+                        <div className="col-span-6">
+                            <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">Logo del evento</label>
+                            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10" onDrop={handleDropLogo} onDragOver={handleDragOverLogo}>
+                                <div className="text-center">                                    
+                                    {showLogoFile ? (
+                                        <>
+                                            <img src={showLogoFile} alt="Imagen cargada" className="w-32 h-32 object-cover border border-gray-300" />
+                                            <button onClick={handleDeleteLogoImage}>Delete image</button>
+                                        </>                                        
+                                    ) : (
+                                        <>
+                                        <svg className="mx-auto h-12 w-12 text-gray-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                                        </svg>
+                                            <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                                                <label 
+                                                    htmlFor="file-upload" 
+                                                    className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500">
+                                                    <span>Upload a file</span>
+                                                    <input 
+                                                        id="file-upload" 
+                                                        name="file-upload" 
+                                                        type="file" 
+                                                        accept=".jpg, .jpeg, .png" 
+                                                        className="sr-only"                                                         
+                                                        onChange={handleUploadLogoFile}
+                                                    />
+                                                </label>
+                                                <p className="pl-1">or drag and drop</p>
+                                            </div>
+                                            <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+                                        </>                                        
+                                    )}                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div className='col-span-12'>
+                            {
+                                distances.length > 0 && distances.map((item, index) => (
+                                    <a href="#" key={index} className="relative z-10 rounded-lg bg-green-600 px-3 py-1.5 font-medium text-white mr-2">{item.long}k</a>
+                                ))
+                            }
+                        </div>
+                        <div className='col-span-12 mb-6'>                            
+                            <button type="button" onClick={addComponents} className='btn-add-form text-sm font-semibold'>
                                 {showNestedForm ? 'Ocultar distancia' : 'Añadir distancia'}
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
                             </button>
-                        </div>                        
-                                    
-                        {showNestedForm  &&  <FormDistance />}
-                    </div>
-                    <button 
-                        className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mt-4"
-                    >Crear evento</button>
+                            <div>
+                                {formDistance}
+                            </div>
+                        </div>
+                    </div>                    
                 </fieldset>
+                <fieldset>
+                    <legend className="mb-6">Contacto del Evento</legend>
+                    <div className="grid grid-cols-12 gap-x-8 gap-y-6">
+                        <div className="col-span-6">
+                            <label 
+                                htmlFor="webEvent" 
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                            >Web del evento</label>
+                            <div className="mt-2.5">
+                                <input 
+                                    type="text" 
+                                    id="webEvent"
+                                    name="webEvent"
+                                    placeholder="Web del evento" 
+                                    {...register("webEvent")}
+                                    className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 mt-2"
+                                />
+                            </div>
+                        </div>
+                        <div className="col-span-6">
+                            <label 
+                                htmlFor="webEvent" 
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                            >Email del evento</label>
+                            <div className="mt-2.5">
+                                <input 
+                                    type="email" 
+                                    id="emailEvent"
+                                    name="emailEvent"
+                                    placeholder="Email del evento" 
+                                    {...register("emailEvent")}
+                                    className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 mt-2"
+                                />
+                            </div>
+                        </div> 
+                        <div className="col-span-6">
+                            <label 
+                                htmlFor="instagramEvent" 
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                            >Instagram del evento</label>
+                            <div className="mt-2.5">
+                                <input 
+                                    type="text" 
+                                    id="instagramEvent"
+                                    name="instagramEvent"
+                                    placeholder="Instagram del evento" 
+                                    {...register("instagramEvent")}
+                                    className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 mt-2"
+                                />
+                            </div>
+                        </div>
+                        <div className="col-span-6">
+                            <label 
+                                htmlFor="phoneEvent" 
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                            >Teléfono del evento</label>
+                            <div className="mt-2.5">
+                                <input 
+                                    type="phone" 
+                                    id="phoneEvent"
+                                    name="phoneEvent"
+                                    placeholder="Teléfono del evento" 
+                                    {...register("phoneEvent")}
+                                    className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 mt-2"
+                                />
+                            </div>
+                        </div> 
+                    </div>
+                </fieldset>
+                <button 
+                    className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mt-4"
+                >Crear evento</button>
             </form>
         </div>
     )
