@@ -115,7 +115,6 @@ const FormCreateEvent = (props) => {
             instagramEvent: data.instagramEvent,
             phoneEvent: data.phoneEvent
         };
-        console.log("DATA ------> 3", eventFormContent);
 
         try {
             await addDoc(collection(db, "events"),{

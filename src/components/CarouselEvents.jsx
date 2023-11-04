@@ -5,10 +5,12 @@ import "slick-carousel/slick/slick-theme.css";
 import EventCardComponent from "./EventCardComponents";
 import "./CarouselEvents.scss"
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from "../firebase/config"
+import { db } from "../firebase/config";
+import { useEventsContext } from './../store/store'
 
 const CarouselEvents = () => {
-
+    
+    const { eventListItems, addEvent } = useEventsContext();
     const [ windowWidth, setWindowWidth ] = useState(window.innerWidth);
     const [ eventList, setEventList ] = useState([])
 
@@ -23,11 +25,13 @@ const CarouselEvents = () => {
         // const eventRef = db.collection("events");
         getDocs(eventRef)
             .then((resp) => {
-                console.log("DATABASE", resp.docs);
                 const list = resp.docs.map((doc) => {
                     return { ...doc.data(), id: doc.id }
                 })
-                setEventList(list)
+                const orderedItems = [...list];
+                orderedItems.sort(compareByDate);
+                // setEventList(orderedItems);
+                addEvent(orderedItems)
             })  
 
 		return () => {
@@ -36,9 +40,28 @@ const CarouselEvents = () => {
 
 	}, [windowWidth]); 
 
-    
+    // Función de comparación para ordenar por fecha
+    function compareByDate(a, b) {
+        return a.date - b.date;
+    }
 
-    console.log("EVENT LIST", eventList)
+    const categories = [];
+
+    // eventList.forEach(item => {
+    //     if (!categories[item.month]) {
+    //         categories[item.month] = [];
+    //     }
+    //     categories[item.month].push(item);
+    // });
+
+    eventListItems.forEach(item => {
+        if (!categories[item.month]) {
+            categories[item.month] = [];
+        }
+        categories[item.month].push(item);
+    });
+
+    console.log("CATEGORIA", categories)
 
     var settings = {
         className: "center",
@@ -96,15 +119,27 @@ const CarouselEvents = () => {
         }
     ]
     return (
-        <div>
+        <div className='carousel-events'>
             <h2> Multiple items </h2>
-            <Slider {...settings}>
+            {Object.keys(categories).map(month => (
+                <div key={month}>
+                    <h2 className='sm:text-sm lg:text-lg font-semibold leading-7 text-gray-900 text-left margin-title'>{`${month}`}</h2>
+                    <Slider {...settings}>
+                        {                            
+                            categories[month].map((item, index) => (
+                                <EventCardComponent key={item.id} eventList={item}/>
+                            ))
+                        }                
+                    </Slider>
+                </div>
+            ))}
+            {/* <Slider {...settings}>
                 {
                     eventList.length > 0 && eventList.map((item, index) => (
                         <EventCardComponent key={item.id} eventList={item}/>
                     ))
                 }                
-            </Slider>
+            </Slider> */}
         </div>
     )
 }

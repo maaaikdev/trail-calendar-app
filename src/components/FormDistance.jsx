@@ -29,18 +29,15 @@ const FormDistance = ({deleteComponent, dataFormDistance}) => {
             fitnessRequired: 0,
             gpx: gpxFile
         }
-        console.log("Form distance:", distance);
         dataFormDistance(distance)
     }
 
     const handleFileChange = async(event) => {
         const file = event.target.files[0];
-        console.log("FILE", file)
 
         const refGpxFile = ref(storage, `gpxMap/${file.name}`);
         await uploadBytes(refGpxFile, file);
         const resultGpx = await getDownloadURL(refGpxFile)
-        console.log("GPX", resultGpx)
         setGpxFile(resultGpx)
 
         // const imagenURL = URL.createObjectURL(file);
