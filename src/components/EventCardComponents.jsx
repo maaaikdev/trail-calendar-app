@@ -33,24 +33,24 @@ const EventCardComponent = (props) => {
                             className="rounded-t-lg"
                             src={eventList.mainImg}
                             alt="" />
-                        <a href="#!">
+                        <div>
                         <div
                             className="absolute bottom-0 left-0 right-0 top-0 h-full w-full overflow-hidden bg-[hsla(0,0%,98%,0.15)] bg-fixed opacity-0 transition duration-300 ease-in-out hover:opacity-100"></div>
-                        </a>
+                        </div>
                     </div>
                 </TERipple>
                 <div className="p-6 text-left">
                     <article className="flex max-w-xl flex-col items-start justify-between">
                         <div className="flex items-center gap-x-4 text-xs">
-                            <time datetime="2020-03-16" className="text-gray-500">{dateEvent}</time>
-                            <a href="#" className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100">{eventList.level}</a>
+                            <div className="text-gray-500">{dateEvent}</div>
+                            <div className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100">{eventList.level}</div>
                         </div>
                         <div className="group relative">
                             <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
-                                <a href="#">
+                                <div>
                                     <span className="absolute inset-0"></span>
                                     {eventList.title}
-                                </a>
+                                </div>
                             </h3>
                             <h4 className='text-xs text-gray-900 mt-1'>{eventList.location}</h4>
                             <div className='distances flex flex-col px-0'>
@@ -68,11 +68,9 @@ const EventCardComponent = (props) => {
                             <img src={eventList.logoEvent} alt="" className="h-10 w-10 rounded-full bg-gray-50" />
                             <div className="text-sm leading-6">
                                 <p className="text-gray-600">Organizador</p>
-                                <p className="font-semibold text-gray-900">
-                                    <a href="#">
+                                <p className="font-semibold text-gray-900">                                    
                                         <span className="absolute inset-0"></span>
                                         {eventList.organizer}
-                                    </a>
                                 </p>                            
                             </div>
                         </div>

@@ -1,0 +1,180 @@
+[
+    {
+        "date": "Febrero 16, 2024",
+        "level": "Moderado",
+        "title": "Cordillera Trail",
+        "category": "Trailrunning",
+        "Month": "Noviembre",
+        "mainImg": "",
+        "lon": "",
+        "lat": "", 
+        "location": "San Antonio del Tequendama y Parque Natural Chicaque. - Cundinamarca",
+        "description": "¡Prepárate para enfrentar el Reto del Tequendama! El próximo 11 de febrero, Cordillera Trail Futuro regresa para celebrar su décima edición, invitando a los participantes a desafiar los senderos y las montañas de la región del Tequendama, culminando en el bosque de niebla del Parque Natural Chicaque. Una experiencia única que año tras año atrae a los mejores corredores a superar sus tiempos en una ruta de otro nivel.",
+        "distances": [
+            {
+                "long": "21",
+                "averageTime": "5h 55",
+                "Ascent": "1000",
+                "Descent": "100",
+                "highestPoint": "2,590",
+                "LowestPoint": "1,190",
+                "EstimatedAverageSpeed": "5.6 km/h",
+                "averageInclination": "20%",
+                "technicalDifficulty": 4,
+                "fitnessRequired": 4,
+                "gpx": "http://www.google.com"
+            },
+            {
+                "long": "10",
+                "averageTime": "5h 55",
+                "Ascent": "1000",
+                "Descent": "100",
+                "Uphill": "1900",
+                "Downhill": "1.640",
+                "highestPoint": "2,590",
+                "LowestPoint": "1,190",
+                "EstimatedAverageSpeed": "5.6 km/h",
+                "averageInclination": "20%",
+                "TechnicalDifficulty": 4,
+                "FitnessRequired": 4,
+                "gpx": "http://www.google.com"
+            }
+        ],
+        "organizer": "Aire Libre y Aventura"
+    },
+    {
+        "date": "Febrero 16, 2024",
+        "level": "Moderado",
+        "title": "Cordillera Trail",
+        "category": "Trailrunning",
+        "Month": "Noviembre",
+        "mainImg": "",
+        "lon": "",
+        "lat": "", 
+        "location": "San Antonio del Tequendama y Parque Natural Chicaque. - Cundinamarca",
+        "description": "¡Prepárate para enfrentar el Reto del Tequendama! El próximo 11 de febrero, Cordillera Trail Futuro regresa para celebrar su décima edición, invitando a los participantes a desafiar los senderos y las montañas de la región del Tequendama, culminando en el bosque de niebla del Parque Natural Chicaque. Una experiencia única que año tras año atrae a los mejores corredores a superar sus tiempos en una ruta de otro nivel.",
+        "distances": [
+            {
+                "long": "21",
+                "averageTime": "5h 55",
+                "Ascent": "1000",
+                "Descent": "100",
+                "Uphill": "1900",
+                "Downhill": "1.640",
+                "highestPoint": "2,590",
+                "LowestPoint": "1,190",
+                "EstimatedAverageSpeed": "5.6 km/h",
+                "averageInclination": "20%",
+                "TechnicalDifficulty": 4,
+                "FitnessRequired": 4,
+                "gpx": "http://www.google.com"
+            },
+            {
+                "long": "10",
+                "averageTime": "5h 55",
+                "Ascent": "1000",
+                "Descent": "100",
+                "Uphill": "1900",
+                "Downhill": "1.640",
+                "highestPoint": "2,590",
+                "LowestPoint": "1,190",
+                "EstimatedAverageSpeed": "5.6 km/h",
+                "averageInclination": "20%",
+                "TechnicalDifficulty": 4,
+                "FitnessRequired": 4,
+                "gpx": "http://www.google.com"
+            }
+        ],
+        "organizer": "Aire Libre y Aventura"
+    },
+    {
+        "date": "Febrero 16, 2024",
+        "level": "Moderado",
+        "title": "Cordillera Trail",
+        "category": "Trailrunning",
+        "Month": "Diciembre",
+        "mainImg": "",
+        "lon": "",
+        "lat": "", 
+        "location": "San Antonio del Tequendama y Parque Natural Chicaque. - Cundinamarca",
+        "description": "¡Prepárate para enfrentar el Reto del Tequendama! El próximo 11 de febrero, Cordillera Trail Futuro regresa para celebrar su décima edición, invitando a los participantes a desafiar los senderos y las montañas de la región del Tequendama, culminando en el bosque de niebla del Parque Natural Chicaque. Una experiencia única que año tras año atrae a los mejores corredores a superar sus tiempos en una ruta de otro nivel.",
+        "distances": [
+            {
+                "long": "21",
+                "averageTime": "5h 55",
+                "Ascent": "1000",
+                "Descent": "100",
+                "Uphill": "1900",
+                "Downhill": "1.640",
+                "highestPoint": "2,590",
+                "LowestPoint": "1,190",
+                "EstimatedAverageSpeed": "5.6 km/h",
+                "averageInclination": "20%",
+                "TechnicalDifficulty": 4,
+                "FitnessRequired": 4,
+                "gpx": "http://www.google.com"
+            },
+            {
+                "long": "10",
+                "averageTime": "5h 55",
+                "Ascent": "1000",
+                "Descent": "100",
+                "Uphill": "1900",
+                "Downhill": "1.640",
+                "highestPoint": "2,590",
+                "LowestPoint": "1,190",
+                "EstimatedAverageSpeed": "5.6 km/h",
+                "averageInclination": "20%",
+                "TechnicalDifficulty": 4,
+                "FitnessRequired": 4,
+                "gpx": "http://www.google.com"
+            }
+        ],
+        "organizer": "Aire Libre y Aventura"
+    },
+    {
+        "date": "Febrero 16, 2024",
+        "level": "Moderado",
+        "title": "Cordillera Trail",
+        "category": "Trailrunning",
+        "Month": "Diciembre",
+        "mainImg": "",
+        "lon": "",
+        "lat": "", 
+        "location": "San Antonio del Tequendama y Parque Natural Chicaque. - Cundinamarca",
+        "description": "¡Prepárate para enfrentar el Reto del Tequendama! El próximo 11 de febrero, Cordillera Trail Futuro regresa para celebrar su décima edición, invitando a los participantes a desafiar los senderos y las montañas de la región del Tequendama, culminando en el bosque de niebla del Parque Natural Chicaque. Una experiencia única que año tras año atrae a los mejores corredores a superar sus tiempos en una ruta de otro nivel.",
+        "distances": [
+            {
+                "long": "21",
+                "averageTime": "5h 55",
+                "Ascent": "1000",
+                "Descent": "100",
+                "Uphill": "1900",
+                "Downhill": "1.640",
+                "highestPoint": "2,590",
+                "LowestPoint": "1,190",
+                "EstimatedAverageSpeed": "5.6 km/h",
+                "averageInclination": "20%",
+                "TechnicalDifficulty": 4,
+                "FitnessRequired": 4,
+                "gpx": "http://www.google.com"
+            },
+            {
+                "long": "10",
+                "averageTime": "5h 55",
+                "Ascent": "1000",
+                "Descent": "100",
+                "Uphill": "1900",
+                "Downhill": "1.640",
+                "highestPoint": "2,590",
+                "LowestPoint": "1,190",
+                "EstimatedAverageSpeed": "5.6 km/h",
+                "averageInclination": "20%",
+                "TechnicalDifficulty": 4,
+                "FitnessRequired": 4,
+                "gpx": "http://www.google.com"
+            }
+        ],
+        "organizer": "Aire Libre y Aventura"
+    }
+]
