@@ -3,10 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { SearchBox } from '@mapbox/search-js-react';
 import "./EventCardDetailComponent.scss";
-import { Layer, Source } from 'react-map-gl';
-import toGeoJSON from 'togeojson';
-import { DOMParser } from 'xmldom';
-import GPXMap from './GPXMap';
+import GPXMap3 from './GPXMap3';
 
 
 const TOKEN = process.env.REACT_APP_TOKEN;
@@ -15,8 +12,6 @@ const EventCardDetailComponent = () => {
 
     const [ map, setMap ] = useState(null);
     const [ value, setValue ] = useState('');
-    const [ route, setRoute ] = useState([]);
-    const [trackCoordinates, setTrackCoordinates] = useState([]);
 
     const mapContainerRef = useRef(null);
 
@@ -37,24 +32,6 @@ const EventCardDetailComponent = () => {
         return () => map.remove();
 
     },[]);
-
-    // const loadGPXFile = async () => {
-    //     debugger
-    //     const response = await fetch('data/Las_Palmas_Run.gpx');
-    //     const text = await response.text();
-    //     const parser = new DOMParser();
-    //     const xmlDoc = parser.parseFromString(text, 'text/xml');
-    //     const trackpoints = xmlDoc.querySelectorAll('trkpt');
-    //     const routeCoordinates = trackpoints.map((trackpoint) => {
-    //     return [
-    //         parseFloat(trackpoint.getAttribute('lon')),
-    //         parseFloat(trackpoint.getAttribute('lat')),
-    //     ];
-    //     });
-    //     setRoute(routeCoordinates);
-    // };
-
-    console.log("ROUTE", route)
 
     return(
         <>
@@ -81,7 +58,7 @@ const EventCardDetailComponent = () => {
             >
             </div>
             <br></br>
-            <GPXMap gpxFile="data/Las_Palmas_Run.gpx" />
+            <GPXMap3/>
         </>
     )
 };
