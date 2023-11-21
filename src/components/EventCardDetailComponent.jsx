@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { SearchBox } from '@mapbox/search-js-react';
 import "./EventCardDetailComponent.scss";
 import GPXMap3 from './GPXMap3';
+import GPXMap4 from './GPXMap4';
 
 
 const TOKEN = process.env.REACT_APP_TOKEN;
@@ -59,6 +60,7 @@ const EventCardDetailComponent = () => {
             </div>
             <br></br>
             <GPXMap3/>
+            <GPXMap4/>
         </>
     )
 };

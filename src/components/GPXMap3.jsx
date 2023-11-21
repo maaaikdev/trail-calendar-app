@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ReactMapGL, { Source, Layer, Marker } from 'react-map-gl';
 // import gpxParse from 'gpx-parse';
-import polyline from '@mapbox/polyline';
-import Chart from 'chart.js/auto';
-import { queryTerrainElevation } from 'viewport-mercator-project';
-import axios from 'axios';
-// import geolib from 'geolib';
+// import axios from 'axios';
+// import MapboxDraw from '@mapbox/mapbox-gl-draw';
+// import * as turf from '@turf/turf';
+// import { Chart } from 'chart.js/auto';
+// import 'chart.js/auto';
+// import mapboxgl from 'mapbox-gl';
+
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 const TOKEN = process.env.REACT_APP_TOKEN;
 
@@ -22,6 +25,7 @@ const GPXMap3 = () => {
     const [markers, setMarkers] = useState([]);
     const [elevationData, setElevationData] = useState(null);
     const elevationChartRef = useRef(null);
+
 
     useEffect(() => {
         fetchGpxData();
@@ -104,12 +108,12 @@ const GPXMap3 = () => {
             }
       
             const gpxContent = await response.text();
-            const decodedData = polyline.toGeoJSON(gpxContent);
+            // const decodedData = polyline.toGeoJSON(gpxContent);
+            
 
             const parser = new DOMParser();
 
             const xmlDoc = parser.parseFromString(gpxContent, 'text/xml');
-
             const coordinates = Array.from(xmlDoc.querySelectorAll('trkpt')).map((point) => ({
                 latitude: parseFloat(point.getAttribute('lat')),
                 longitude: parseFloat(point.getAttribute('lon')),
@@ -197,61 +201,37 @@ const GPXMap3 = () => {
 
     const fetchElevations = async () => {
         console.log("coordinates", elevationData)
-        // try {            
-        //     const requests = elevationData.map(async (coord, index) => {
-        //         console.log("COORDS", coord)
-        //         const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${coord.longitude},${coord.latitude}.geojson.json?access_token=${TOKEN}`;
-        //         // const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${coord[0]},${coord[1]};${coord[2]},${coord[3]}.geojson.json?access_token=${TOKEN}`;
+        // try {
+        //     const batchSize = 5; // Set the number of coordinate pairs in each batch
+        //     const batches = [];
+        //     console.log("batch 1", elevationData)
+        //     for (let i = 0; i < elevationData.length; i += batchSize) {
+        //         const batch = elevationData.slice(i, i + batchSize);
+        //         batches.push(batch);
+        //     }
+        //     console.log("batch 1", batches)
+        //     const requests = batches.map(async (batch, batchIndex) => {
+        //         console.log("batch 2", batch)
+        //         const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${batch.map(coord => coord.longitude + ',' + coord.latitude).join(';')}/geojson.json?access_token=${TOKEN}`;
+    
         //         try {
         //             const response = await axios.get(url);
-        //             const elevation = response.data.features[0].properties.ele;
-        //             return elevation;
+        //             const elevations = response.data.features.map(feature => feature.properties.ele);
+        //             return elevations;
         //         } catch (error) {
-        //             console.error(`Error fetching elevation for index ${index}:`, error);
-        //             return null; // Or handle the error as needed
+        //             console.error(`Error fetching elevations for batch ${batchIndex}:`, error);
+        //             return Array(batch.length).fill(null); // Or handle the error as needed
         //         }
         //     });
-
-        //     const elevations = await Promise.all(requests);
-        //     const validElevations = elevations.filter(elevation => elevation !== null);
-        //     setElevationData(validElevations);
-
-        //     // ... (other code you may want to execute after obtaining elevations)
+    
+        //     const elevationBatches = await Promise.all(requests);
+        //     const elevations = elevationBatches.flat(); // Flatten the array of arrays
+    
+        //     setElevationData(elevations);
         // } catch (error) {
         //     console.error('Error fetching elevations:', error);
         // }
-        try {
-            const batchSize = 5; // Set the number of coordinate pairs in each batch
-            const batches = [];
-            console.log("batch 1", elevationData)
-            for (let i = 0; i < elevationData.length; i += batchSize) {
-                const batch = elevationData.slice(i, i + batchSize);
-                batches.push(batch);
-            }
-            console.log("batch 1", batches)
-            const requests = batches.map(async (batch, batchIndex) => {
-                console.log("batch 2", batch)
-                const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${batch.map(coord => coord.longitude + ',' + coord.latitude).join(';')}/geojson.json?access_token=${TOKEN}`;
-    
-                try {
-                    const response = await axios.get(url);
-                    const elevations = response.data.features.map(feature => feature.properties.ele);
-                    return elevations;
-                } catch (error) {
-                    console.error(`Error fetching elevations for batch ${batchIndex}:`, error);
-                    return Array(batch.length).fill(null); // Or handle the error as needed
-                }
-            });
-    
-            const elevationBatches = await Promise.all(requests);
-            const elevations = elevationBatches.flat(); // Flatten the array of arrays
-    
-            setElevationData(elevations);
-        } catch (error) {
-            console.error('Error fetching elevations:', error);
-        }
     };
-
 
     return (
         <div style={{ height: '500px', width: '500px', margin: '20px'}}>
@@ -290,9 +270,9 @@ const GPXMap3 = () => {
                     </>                    
                 )}
             </ReactMapGL>
-            {gpxData && (
+            {/* {gpxData && (
                 <canvas ref={elevationChartRef} width="500" height="200" style={{ marginTop: '20px' }} />
-            )}
+            )} */}
         </div>
         
     );
