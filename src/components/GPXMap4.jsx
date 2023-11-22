@@ -14,6 +14,7 @@ const GPXMap4 = () => {
   const mapContainer = useRef(null);
   const mapContainerRef = useRef(null);
   const drawRef = useRef(null);
+  const chartRef = useRef(null);
 
   const [viewport, setViewport] = useState({
     latitude: 40,
@@ -29,7 +30,9 @@ const GPXMap4 = () => {
   const [gpxData, setGpxData] = useState(null);
 
   const [markers, setMarkers] = useState([]);
-    const [elevationData, setElevationData] = useState(null);
+  const [elevationData, setElevationData] = useState(null);
+  const [distance, setDistance] = useState(0);
+  const [totalDistance, setTotalDistance] = useState(0);
 
   const updateElevationProfile = async (map, geojsonData) => {
     // const features = drawRef.current.getAll();
@@ -102,7 +105,7 @@ const GPXMap4 = () => {
     ];
     console.log("elevations----", elevations)
     // add dummy labels
-    await createElevationChart(elevations);
+    // await createElevationChart(elevations);
     // myLineChart.data.labels = elevations.map(() => '');
     // myLineChart.data.datasets[0] = {
     //     data: elevations,
@@ -253,6 +256,20 @@ const GPXMap4 = () => {
         console.log("RESPONSE", parser)
         const xmlDoc = parser.parseFromString(gpxData, 'text/xml');
         console.log("COORDS 2", xmlDoc);
+        const geojson = toGeoJSON.gpx(xmlDoc);
+        console.log("geojson", geojson);
+
+        const newElevations = Array.from(xmlDoc.getElementsByTagName('ele')).map((ele) => parseFloat(ele.textContent));
+        console.log("newElevations", newElevations);
+        // setElevations(newElevations);
+        const newDistance = calculateDistance1(geojson.features[0].geometry.coordinates);
+        console.log("newDistance", newDistance);
+        console.log("Total Distance", newDistance[newDistance.length - 1]);
+        const totalDistances = newDistance[newDistance.length - 1]
+        setTotalDistance(totalDistances); 
+        setDistance(newDistance);
+        
+        createElevationChart(newDistance, newElevations, totalDistances);
 
         const coordinates = Array.from(xmlDoc.querySelectorAll('trkpt')).map((point) => ({
             latitude: parseFloat(point.getAttribute('lat')),
@@ -356,6 +373,31 @@ const GPXMap4 = () => {
     //   return () => map.remove();
 }, []);
 
+  const calculateDistance1 = (coordinates) => {
+    let totalDistance = 0;
+    const distances = [0]; // Start with 0 distance at the beginning
+
+    for (let i = 0; i < coordinates.length - 1; i++) {
+      const [lon1, lat1] = coordinates[i];
+      const [lon2, lat2] = coordinates[i + 1];
+
+      const dLat = (lat2 - lat1) * (Math.PI / 180);
+      const dLon = (lon2 - lon1) * (Math.PI / 180);
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const radius = 6371; // Earth's radius in kilometers
+
+      totalDistance += radius * c;
+      distances.push(totalDistance);
+    }
+
+    return distances;
+  };
+
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         const R = 6371; // Radius of the earth in km
         const dLat = deg2rad(lat2 - lat1);
@@ -406,52 +448,128 @@ const GPXMap4 = () => {
         // }
     };
 
-  const createElevationChart = async (data) => {
+  const createElevationChart = async (distances, elevations, totalDistances) => {
     
-    console.log("DATA", data)
-    data.map(point => {
-        console.log("POINT", point)
+    console.log("DATA", [distances, elevations, totalDistances])
+    const labelsDistances = [];
+    distances.map((_, index) => {
+      labelsDistances.push(`${(index * totalDistances / distances.length).toFixed(2)} km`)      
     })
-    const ctx = document.getElementById('elevationChart').getContext('2d');
-    return new Chart(ctx, {
-      type: 'line',
-      data: {
-        // labels: data.map(point => `${point.lon.toFixed(2)}, ${point.lat.toFixed(2)}`),
-        labels: data.map(point => `${point.distanceAlongLine.toFixed(2)} km`),
-        datasets: [
-          {
-            label: 'Elevation Profile',
-            data: data.map(point => point.elevation),
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2,
-            fill: false,
-            tension: 0.2,
-            pointBackgroundColor: 'rgb(0, 0, 0, 0)',
-            pointBorderWidth: 0,
-            backgroundColor: 'rgb(0, 0, 0)'
-          },
-        ],
-      },
-      options: {
-        scales: {
-            y: {
-              beginAtZero: true,
+    console.log("------ DISTANFES", labelsDistances)
+    // data.map(point => {
+    //     console.log("POINT", point)
+    // })
+    // const ctx = document.getElementById('elevationChart').getContext('2d');
+    // return new Chart(ctx, {
+    //   type: 'line',
+    //   data: {
+    //     // labels: data.map(point => `${point.lon.toFixed(2)}, ${point.lat.toFixed(2)}`),
+    //     // labels: data.map(point => `${point.distanceAlongLine.toFixed(2)} km`),
+    //     labels: distances,
+    //     datasets: [
+    //       {
+    //         label: 'Elevation Profile',
+    //         // data: data.map(point => point.elevation),
+    //         data: elevations,
+    //         borderColor: 'rgba(75, 192, 192, 1)',
+    //         borderWidth: 2,
+    //         fill: false,
+    //         tension: 0.2,
+    //         pointBackgroundColor: 'rgb(0, 0, 0, 0)',
+    //         pointBorderWidth: 0,
+    //         backgroundColor: 'rgb(0, 0, 0)'
+    //       },
+    //     ],
+    //   },
+    //   options: {
+    //     scales: {
+    //         y: {
+    //           beginAtZero: true,
+    //         },
+    //         x: {
+    //           title: {
+    //             display: true,
+    //             text: 'Distance (km)',
+    //           },
+    //         },
+    //     },
+    //   },
+    // });
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    // Create a new Chart.js line chart
+    const ctx = document.getElementById('elevationChart');
+
+    if (ctx && distances.length > 0) {
+      chartRef.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          // labels: labelsDistances,
+          labels: labelsDistances,
+          datasets: [
+            {
+              label: 'Distance Traveled (km)',
+              data: elevations,
+              fill: false,
+              borderColor: 'rgba(75,192,192,1)',
+              pointRadius: 0,
+              tension: 0.4
             },
-            x: {
-              title: {
-                display: true,
-                text: 'Distance (km)',
-              },
-            },
+          ],
         },
-      },
-    });
+        options: {
+          plugins: {
+            // legend: {
+            //   display: false
+            // },
+            title: {
+              display: true,
+              align: 'start',
+              text: 'Elevation (m)'
+            }
+          },
+          maintainAspectRatio: false,
+          responsive: false,
+          scales: {
+            x: {              
+              position: 'bottom',
+              grid: {
+                display: false
+              },
+              skipNull: true,
+            },
+            y: {
+            min: 0,
+              grid: {
+                display: true
+              }
+            }
+          },
+          elements: {
+            point: {
+              radius: 0
+            }
+          },
+          layout: {
+            padding: {
+              top: 6,
+              right: 20,
+              bottom: -10,
+              left: 20
+            }
+          }
+          }
+      });
+    }
   };
 
   return (
     <div>
         <div ref={mapContainer} style={{ height: '400px' }} />
-        <canvas id="elevationChart" width="400" height="200"></canvas>
+        <h3>Total Distance (km): {totalDistance.toFixed(2)}</h3>
+        <canvas id="elevationChart" width="800" height="400"></canvas>
         {/* <div ref={mapContainerRef} style={{ width: '100%', height: '400' }}>
          <ReactMapGL
             {...viewport}
