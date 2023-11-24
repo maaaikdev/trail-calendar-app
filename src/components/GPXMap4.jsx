@@ -277,7 +277,7 @@ const GPXMap4 = () => {
 
         // ---
         
-        createElevationChart(newDistance, newElevations, totalDistances);
+        createElevationChart(newDistance, newElevations, totalDistances, coordinates1, initialPosition);
 
         const coordinates = Array.from(xmlDoc.querySelectorAll('trkpt')).map((point) => ({
             latitude: parseFloat(point.getAttribute('lat')),
@@ -313,7 +313,9 @@ const GPXMap4 = () => {
         const updateChartAndMarker = (clickedIndex) => {
           console.log("clickedIndex", clickedIndex)
           const newData = coordinates1.slice(0, clickedIndex + 1);
-          chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] }));
+          console.log("newData", newData)
+          // chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] }));
+          //console.log("newData 1", chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] })))
           chartRef.current.update();
     
           // Use setLngLat with an array of coordinates
@@ -321,19 +323,19 @@ const GPXMap4 = () => {
         };
     
         // Handle chart click to update marker and chart
-        chartRef.current.canvas.addEventListener('click', (event) => {
-          console.log('Chart clicked!', event);
-          const activePoints = chartRef.current.getElementsAtEventForMode(event, "nearest", {
-            intersect: false
-        });
-        //const activePoints = chartRef.current.getSegmentsAtEvent(event)
-        console.log("activePoints", activePoints)
-          if (activePoints.length > 0) {
-            const clickedIndex = activePoints[0].index;
-            console.log("clickedIndex", clickedIndex)
-            updateChartAndMarker(clickedIndex);
-          }
-        });
+        // chartRef.current.canvas.addEventListener('mouseover', (event) => {
+        //   console.log('Chart clicked!', event);
+        //   const activePoints = chartRef.current.getElementsAtEventForMode(event, "nearest", {
+        //     intersect: true
+        // });
+        // //const activePoints = chartRef.current.getSegmentsAtEvent(event)
+        // console.log("activePoints", activePoints)
+        //   if (activePoints.length > 0) {
+        //     const clickedIndex = activePoints[0].index;
+        //     console.log("clickedIndex", clickedIndex)
+        //     updateChartAndMarker(clickedIndex);
+        //   }
+        // });
 
         handleMapLoad(map, geojsonData);
 
@@ -478,7 +480,9 @@ const GPXMap4 = () => {
         // }
     };
 
-  const createElevationChart = async (distances, elevations, totalDistances) => {
+  const createElevationChart = async (distances, elevations, totalDistances, coordinates1, initialPosition) => {
+
+    //markerRef.current = new mapboxgl.Marker().setLngLat(initialPosition).addTo(map);
     
     const labelsDistances = [];
     distances.map((_, index) => {
@@ -493,100 +497,159 @@ const GPXMap4 = () => {
     const ctx = document.getElementById('elevationChart');
 
     if (ctx && distances.length > 0) {
-      chartRef.current = new Chart(ctx, {
-        type: 'line',
-        data: {
-          // labels: labelsDistances,
-          labels: labelsDistances,
-          datasets: [
-            {
-              label: 'Distance Traveled (km)',
-              data: elevations,
-              fill: false,
-              borderColor: 'rgba(75,192,192,1)',
-              pointRadius: 0,
-              tension: 0.4,
-            },
-          ],
-        },
-        options: {
-          zoom: {
-            pan: {
-              enabled: true,
-              mode: 'xy', // Permitir el desplazamiento en ambos ejes
-            },
-            zoom: {
-              wheel: {
-                enabled: true,
-              },
-              pinch: {
-                enabled: true,
-              },
-              mode: 'xy', // Permitir el zoom en ambos ejes
-            }
-          },
-          // onHover: (evt, activeEls, chart) => {
-          //   console.log("HOVER", [evt, activeEls, chart])
-          //   if (activeEls.length === 0 || chart.getElementsAtEventForMode(evt, 'nearest', {
-          //       intersect: true
-          //     }, true).length === 0) {
-          //     return;
-          //   }
-      
-          //   console.log('Function param: ', activeEls[0].index);
-          //   console.log('lookup with the event: ', chart.getElementsAtEventForMode(evt, 'nearest', {
-          //     intersect: true
-          //   }, true)[0].index);
-      
-          //   activeEls.forEach(point => {
-          //     console.log("POINT", point)
-          //     console.log('val: ', chart.data.datasets[point.datasetIndex].data[point.index])
-          //   })
-          // },
-          plugins: {
-            // legend: {
-            //   display: false
-            // },
-            title: {
-              display: true,
-              align: 'start',
-              text: 'Elevation (m)'
-            }
-          },
-          maintainAspectRatio: false,
-          responsive: false,
-          scales: {
-            x: {              
-              position: 'bottom',
-              grid: {
-                display: false
-              },
-              skipNull: true,
-            },
-            y: {
-            min: 0,
-              grid: {
-                display: true
-              }
-            }
-          },
-          elements: {
-            point: {
-              radius: 0,
-              hoverRadius: 20
-            }
-          },
-          layout: {
-            padding: {
-              top: 6,
-              right: 20,
-              bottom: -10,
-              left: 20
-            }
-          }
-          }
-      });
+		const hoverLine = {
+			id: "hoverline",
+			afterDatasetsDraw(chart, args, plugins){
+				const { 
+					ctx, 
+					tooltip, 
+					chartArea: {
+						top, 
+						bottom, 
+						left, 
+						right, 
+						width, 
+						height
+					}, 
+					scales: {
+						x,
+						y
+					} 
+				} = chart;
+
+				if(tooltip._active.length > 0 ){
+					
+					// const xCoor = tooltip.dataPoints[0].dataIndex;
+					// const yCoor = tooltip.dataPoints[0].parsed.y;
+					// console.log("xCoor", xCoor)
+					// console.log("yCoor", yCoor)
+
+					const xCoor = x.getPixelForValue(tooltip.dataPoints[0].dataIndex);
+					const yCoor = y.getPixelForValue(tooltip.dataPoints[0].parsed.y);
+					console.log("xCoor", xCoor)
+					console.log("yCoor", yCoor)
+					ctx.save();
+					ctx.beginPath();
+					ctx.lineWidth = 3;
+					ctx.strokeStyle = "rgb(0,0,0,1)";
+					ctx.setLineDash([6, 6])
+					ctx.moveTo(xCoor, yCoor);
+					ctx.lineTo(xCoor, bottom);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.setLineDash([])
+				}
+			}
+		}
+		const title = {
+			title: {
+				display: true,
+				align: 'start',
+				text: 'Elevation (m)'
+			}
+		}
+		chartRef.current = new Chart(ctx, {
+			type: 'line',
+			data: {
+			// labels: labelsDistances,
+			labels: labelsDistances,
+			datasets: [
+				{
+				label: 'Distance Traveled (km)',
+				data: elevations,
+				fill: false,
+				borderColor: 'rgba(75,192,192,1)',
+				pointRadius: 0,
+				tension: 0.4,
+				},
+			],
+			},
+			options: {
+			zoom: {
+				pan: {
+				enabled: true,
+				mode: 'xy', // Permitir el desplazamiento en ambos ejes
+				},
+				zoom: {
+				wheel: {
+					enabled: true,
+				},
+				pinch: {
+					enabled: true,
+				},
+				mode: 'xy', // Permitir el zoom en ambos ejes
+				}
+			},
+			onHover: (event, activeEls, chart) => {
+				const activePoints = chartRef.current.getElementsAtEventForMode(event, "nearest", {
+					intersect: true
+				});
+				if (activePoints.length > 0) {
+					const clickedIndex = activePoints[0].index;
+					updateChartAndMarker(clickedIndex);
+				}
+			},
+			// plugins: {
+			//   // legend: {
+			//   //   display: false
+			//   // },
+			//   title: {
+			//     display: true,
+			//     align: 'start',
+			//     text: 'Elevation (m)'
+			//   }
+			// },
+			plugins:[
+				hoverLine
+			],
+			maintainAspectRatio: false,
+			responsive: false,
+			scales: {
+				x: {              
+				position: 'bottom',
+				grid: {
+					display: false
+				},
+				skipNull: true,
+				},
+				y: {
+				min: 0,
+				grid: {
+					display: true
+				}
+				}
+			},
+			elements: {
+				point: {
+				radius: 0,
+				hoverRadius: 20
+				}
+			},
+			layout: {
+				padding: {
+				top: 6,
+				right: 20,
+				bottom: -10,
+				left: 20
+				}
+			}
+			}
+		});
+
+	  
     }
+
+    const updateChartAndMarker = (clickedIndex) => {
+      console.log("clickedIndex", clickedIndex)
+      const newData = coordinates1.slice(0, clickedIndex + 1);
+      console.log("newData", newData)
+      // chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] }));
+      //console.log("newData 1", chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] })))
+      chartRef.current.update();
+
+      // Use setLngLat with an array of coordinates
+      markerRef.current.setLngLat(coordinates1[clickedIndex]);
+    };
 
     
   };
