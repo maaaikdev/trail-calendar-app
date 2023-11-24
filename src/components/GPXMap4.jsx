@@ -15,6 +15,9 @@ const GPXMap4 = () => {
   const mapContainerRef = useRef(null);
   const drawRef = useRef(null);
   const chartRef = useRef(null);
+  const chartRef1 = useRef(null);
+  const markerRef = useRef(null);
+  const chartInstance = useRef(null);
 
   const [viewport, setViewport] = useState({
     latitude: 40,
@@ -33,6 +36,8 @@ const GPXMap4 = () => {
   const [elevationData, setElevationData] = useState(null);
   const [distance, setDistance] = useState(0);
   const [totalDistance, setTotalDistance] = useState(0);
+  const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
+  
 
   const updateElevationProfile = async (map, geojsonData) => {
     // const features = drawRef.current.getAll();
@@ -84,12 +89,9 @@ const GPXMap4 = () => {
     //   // Now you have the elevation profile data with distance along the line and elevation,
     //   // and you can use Chart.js to create a chart
     //   await createElevationChart(coordinates);
-    console.log("geojsonData-------llll", geojsonData)
-    debugger;
     
     const chunks = turf.lineChunk(geojsonData, 1).features;
 
-    console.log("geojsonData-------llll", chunks)
  
     // get the elevation for the leading coordinate of each segment
     const elevations = [
@@ -103,7 +105,6 @@ const GPXMap4 = () => {
             chunks[chunks.length - 1].geometry.coordinates[1]
         )
     ];
-    console.log("elevations----", elevations)
     // add dummy labels
     // await createElevationChart(elevations);
     // myLineChart.data.labels = elevations.map(() => '');
@@ -116,7 +117,6 @@ const GPXMap4 = () => {
   };
 
   const handleMapLoad = (map, geojsonData) => {
-    console.log("MAP", map)
     // const map = new mapboxgl.Map({
     //   container: mapContainer.current,
     //   style: 'mapbox://styles/maaaik/clojd84jt004a01qn4cpuhklc',
@@ -268,6 +268,14 @@ const GPXMap4 = () => {
         const totalDistances = newDistance[newDistance.length - 1]
         setTotalDistance(totalDistances); 
         setDistance(newDistance);
+
+        // ---
+        const coordinates1 = geojson.features[0].geometry.coordinates;
+        const initialPosition = coordinates1[coordinates1.length - 1];
+
+        console.log("initialPosition", initialPosition)
+
+        // ---
         
         createElevationChart(newDistance, newElevations, totalDistances);
 
@@ -290,7 +298,8 @@ const GPXMap4 = () => {
             center:[centerLongitude, centerLatitude],
             zoom: 12,
         });
-        
+
+        markerRef.current = new mapboxgl.Marker().setLngLat(initialPosition).addTo(map);        
 
         const geojsonData = {
             type: 'Feature',
@@ -301,13 +310,34 @@ const GPXMap4 = () => {
             },
         };
 
+        const updateChartAndMarker = (clickedIndex) => {
+          console.log("clickedIndex", clickedIndex)
+          const newData = coordinates1.slice(0, clickedIndex + 1);
+          chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] }));
+          chartRef.current.update();
+    
+          // Use setLngLat with an array of coordinates
+          markerRef.current.setLngLat(coordinates1[clickedIndex]);
+        };
+    
+        // Handle chart click to update marker and chart
+        chartRef.current.canvas.addEventListener('click', (event) => {
+          console.log('Chart clicked!', event);
+          const activePoints = chartRef.current.getElementsAtEventForMode(event, "nearest", {
+            intersect: false
+        });
+        //const activePoints = chartRef.current.getSegmentsAtEvent(event)
+        console.log("activePoints", activePoints)
+          if (activePoints.length > 0) {
+            const clickedIndex = activePoints[0].index;
+            console.log("clickedIndex", clickedIndex)
+            updateChartAndMarker(clickedIndex);
+          }
+        });
+
         handleMapLoad(map, geojsonData);
 
-        console.log("geojsonData", geojsonData)
-
         setGpxData(geojsonData);
-
-        console.log("COORDS 5", mapContainer);
 
         // Calculate distance between consecutive points and add markers at each kilometer
         const newMarkers = [];
@@ -369,6 +399,7 @@ const GPXMap4 = () => {
 
       })
       .catch((error) => console.error('Error fetching GPX data:', error));
+      // Clean up resources when component unmounts
 
     //   return () => map.remove();
 }, []);
@@ -415,7 +446,6 @@ const GPXMap4 = () => {
     };
 
     const fetchElevations = async () => {
-        console.log("coordinates", elevationData)
         // try {
         //     const batchSize = 5; // Set the number of coordinate pairs in each batch
         //     const batches = [];
@@ -450,51 +480,11 @@ const GPXMap4 = () => {
 
   const createElevationChart = async (distances, elevations, totalDistances) => {
     
-    console.log("DATA", [distances, elevations, totalDistances])
     const labelsDistances = [];
     distances.map((_, index) => {
       labelsDistances.push(`${(index * totalDistances / distances.length).toFixed(2)} km`)      
     })
-    console.log("------ DISTANFES", labelsDistances)
-    // data.map(point => {
-    //     console.log("POINT", point)
-    // })
-    // const ctx = document.getElementById('elevationChart').getContext('2d');
-    // return new Chart(ctx, {
-    //   type: 'line',
-    //   data: {
-    //     // labels: data.map(point => `${point.lon.toFixed(2)}, ${point.lat.toFixed(2)}`),
-    //     // labels: data.map(point => `${point.distanceAlongLine.toFixed(2)} km`),
-    //     labels: distances,
-    //     datasets: [
-    //       {
-    //         label: 'Elevation Profile',
-    //         // data: data.map(point => point.elevation),
-    //         data: elevations,
-    //         borderColor: 'rgba(75, 192, 192, 1)',
-    //         borderWidth: 2,
-    //         fill: false,
-    //         tension: 0.2,
-    //         pointBackgroundColor: 'rgb(0, 0, 0, 0)',
-    //         pointBorderWidth: 0,
-    //         backgroundColor: 'rgb(0, 0, 0)'
-    //       },
-    //     ],
-    //   },
-    //   options: {
-    //     scales: {
-    //         y: {
-    //           beginAtZero: true,
-    //         },
-    //         x: {
-    //           title: {
-    //             display: true,
-    //             text: 'Distance (km)',
-    //           },
-    //         },
-    //     },
-    //   },
-    // });
+
     if (chartRef.current) {
       chartRef.current.destroy();
     }
@@ -515,11 +505,44 @@ const GPXMap4 = () => {
               fill: false,
               borderColor: 'rgba(75,192,192,1)',
               pointRadius: 0,
-              tension: 0.4
+              tension: 0.4,
             },
           ],
         },
         options: {
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'xy', // Permitir el desplazamiento en ambos ejes
+            },
+            zoom: {
+              wheel: {
+                enabled: true,
+              },
+              pinch: {
+                enabled: true,
+              },
+              mode: 'xy', // Permitir el zoom en ambos ejes
+            }
+          },
+          // onHover: (evt, activeEls, chart) => {
+          //   console.log("HOVER", [evt, activeEls, chart])
+          //   if (activeEls.length === 0 || chart.getElementsAtEventForMode(evt, 'nearest', {
+          //       intersect: true
+          //     }, true).length === 0) {
+          //     return;
+          //   }
+      
+          //   console.log('Function param: ', activeEls[0].index);
+          //   console.log('lookup with the event: ', chart.getElementsAtEventForMode(evt, 'nearest', {
+          //     intersect: true
+          //   }, true)[0].index);
+      
+          //   activeEls.forEach(point => {
+          //     console.log("POINT", point)
+          //     console.log('val: ', chart.data.datasets[point.datasetIndex].data[point.index])
+          //   })
+          // },
           plugins: {
             // legend: {
             //   display: false
@@ -549,7 +572,8 @@ const GPXMap4 = () => {
           },
           elements: {
             point: {
-              radius: 0
+              radius: 0,
+              hoverRadius: 20
             }
           },
           layout: {
@@ -563,6 +587,8 @@ const GPXMap4 = () => {
           }
       });
     }
+
+    
   };
 
   return (
@@ -570,6 +596,7 @@ const GPXMap4 = () => {
         <div ref={mapContainer} style={{ height: '400px' }} />
         <h3>Total Distance (km): {totalDistance.toFixed(2)}</h3>
         <canvas id="elevationChart" width="800" height="400"></canvas>
+        {/* <canvas ref={chartRef} width="400" height="400" /> */}
         {/* <div ref={mapContainerRef} style={{ width: '100%', height: '400' }}>
          <ReactMapGL
             {...viewport}
