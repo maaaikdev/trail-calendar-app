@@ -5,6 +5,7 @@ import * as turf from '@turf/turf';
 import Chart from 'chart.js/auto';
 import toGeoJSON from 'togeojson';
 import ReactMapGL, { Source, Layer } from 'react-map-gl';
+import isEqual from 'lodash/isEqual';
 
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
@@ -37,18 +38,25 @@ const GPXMap4 = () => {
   const [distance, setDistance] = useState(0);
   const [totalDistance, setTotalDistance] = useState(0);
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
-  
+  const [tooltip, setTooltip] = useState({
+	opacity: 0,
+	top: 0,
+	left: 0,
+	date: '',
+	value: '',
+  }) //
+
 
   const updateElevationProfile = async (map, geojsonData) => {
     // const features = drawRef.current.getAll();
-  
+
     // if (features.features.length === 0) {
     //   return;
     // }
-  
+
     // const line = turf.lineString(features.features[0].geometry.coordinates);
     // const coordinates = [];
-  
+
     // turf.coordEach(line, (coord) => {
     //   coordinates.push(coord);
     // });
@@ -65,15 +73,15 @@ const GPXMap4 = () => {
     //     const distanceAlongLine = index * interval;
     //     coordinates.push({ lon: coord[0], lat: coord[1], distanceAlongLine, elevation: null  });
     // });
-  
+
     // await Promise.all(
     //     coordinates.map(async (coord) => {
     //       const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${coord.lon},${coord.lat}.json?layers=contour&access_token=${mapboxgl.accessToken}`;
-    
+
     //       try {
     //         const response = await fetch(url);
     //         const data = await response.json();
-    
+
     //         if (data.features.length > 0) {
     //           const elevation = data.features[0].properties.ele;
     //           coord.elevation = elevation;
@@ -85,14 +93,14 @@ const GPXMap4 = () => {
     //       }
     //     })
     //   );
-    
+
     //   // Now you have the elevation profile data with distance along the line and elevation,
     //   // and you can use Chart.js to create a chart
     //   await createElevationChart(coordinates);
-    
+
     const chunks = turf.lineChunk(geojsonData, 1).features;
 
- 
+
     // get the elevation for the leading coordinate of each segment
     const elevations = [
         ...chunks.map((feature) => {
@@ -130,7 +138,7 @@ const GPXMap4 = () => {
             type: 'geojson',
             data: geojsonData
         });
-         
+
         map.addLayer({
             id: 'line-line-data',
             type: 'line',
@@ -140,7 +148,7 @@ const GPXMap4 = () => {
                 'line-color': '#37a2eb'
             }
         });
-         
+
         // add the digital elevation model tiles
         map.addSource('mapbox-dem', {
             type: 'raster-dem',
@@ -149,7 +157,7 @@ const GPXMap4 = () => {
             maxzoom: 20
         });
         map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1 });
-         
+
         // add draggable markers
         const marker0 = new mapboxgl.Marker({
             draggable: false,
@@ -164,19 +172,19 @@ const GPXMap4 = () => {
         })
         .setLngLat(geojsonData.geometry.coordinates[1])
         .addTo(map);
-         
+
         // as the user drags a marker, update the data for the line and re-render it with setData()
         const updateLineData = (e, position) => {
             const { lng, lat } = e.target.getLngLat();
             geojsonData.geometry.coordinates[position] = [lng, lat];
             map.getSource('line-data').setData(geojsonData);
         };
-         
+
         marker0.on('drag', (e) => {
             updateLineData(e, 0);
         });
         marker0.on('dragend', updateElevationProfile);
-         
+
         marker1.on('drag', (e) => {
             updateLineData(e, 1);
         });
@@ -194,7 +202,7 @@ const GPXMap4 = () => {
     //         data: geojsonData,
     //         generateId: true,
     //       });
-      
+
     //       map.addLayer({
     //         id: 'route',
     //         type: 'line',
@@ -206,7 +214,7 @@ const GPXMap4 = () => {
     //       });
     // }
   };
-  
+
 
   useEffect(() => {
 
@@ -253,38 +261,28 @@ const GPXMap4 = () => {
 
         // const geojson = toGeoJSON.gpx(new DOMParser().parseFromString(gpxData, 'text/xml'));
         const parser = new DOMParser();
-        console.log("RESPONSE", parser)
         const xmlDoc = parser.parseFromString(gpxData, 'text/xml');
-        console.log("COORDS 2", xmlDoc);
         const geojson = toGeoJSON.gpx(xmlDoc);
-        console.log("geojson", geojson);
 
         const newElevations = Array.from(xmlDoc.getElementsByTagName('ele')).map((ele) => parseFloat(ele.textContent));
-        console.log("newElevations", newElevations);
         // setElevations(newElevations);
         const newDistance = calculateDistance1(geojson.features[0].geometry.coordinates);
-        console.log("newDistance", newDistance);
-        console.log("Total Distance", newDistance[newDistance.length - 1]);
         const totalDistances = newDistance[newDistance.length - 1]
-        setTotalDistance(totalDistances); 
+        setTotalDistance(totalDistances);
         setDistance(newDistance);
 
         // ---
         const coordinates1 = geojson.features[0].geometry.coordinates;
         const initialPosition = coordinates1[coordinates1.length - 1];
 
-        console.log("initialPosition", initialPosition)
-
         // ---
-        
+
         createElevationChart(newDistance, newElevations, totalDistances, coordinates1, initialPosition);
 
         const coordinates = Array.from(xmlDoc.querySelectorAll('trkpt')).map((point) => ({
             latitude: parseFloat(point.getAttribute('lat')),
             longitude: parseFloat(point.getAttribute('lon')),
         }));
-        console.log("COORDS 3", coordinates);
-        console.log("COORDS 4", viewport);
         setGeojsonData(xmlDoc);
 
         const centerLatitude = coordinates.reduce((sum, point) => sum + point.latitude, 0) / coordinates.length;
@@ -299,7 +297,7 @@ const GPXMap4 = () => {
             zoom: 12,
         });
 
-        markerRef.current = new mapboxgl.Marker().setLngLat(initialPosition).addTo(map);        
+        markerRef.current = new mapboxgl.Marker().setLngLat(initialPosition).addTo(map);
 
         const geojsonData = {
             type: 'Feature',
@@ -311,17 +309,15 @@ const GPXMap4 = () => {
         };
 
         const updateChartAndMarker = (clickedIndex) => {
-          console.log("clickedIndex", clickedIndex)
           const newData = coordinates1.slice(0, clickedIndex + 1);
-          console.log("newData", newData)
           // chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] }));
           //console.log("newData 1", chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] })))
           chartRef.current.update();
-    
+
           // Use setLngLat with an array of coordinates
           markerRef.current.setLngLat(coordinates1[clickedIndex]);
         };
-    
+
         // Handle chart click to update marker and chart
         // chartRef.current.canvas.addEventListener('mouseover', (event) => {
         //   console.log('Chart clicked!', event);
@@ -349,7 +345,7 @@ const GPXMap4 = () => {
         };
         let totalDistance = 0;
 
-        
+
 
         for (let i = 1; i < coordinates.length; i++) {
             const distance = calculateDistance(
@@ -460,7 +456,7 @@ const GPXMap4 = () => {
         //     const requests = batches.map(async (batch, batchIndex) => {
         //         console.log("batch 2", batch)
         //         const url = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${batch.map(coord => coord.longitude + ',' + coord.latitude).join(';')}/geojson.json?access_token=${TOKEN}`;
-    
+
         //         try {
         //             const response = await axios.get(url);
         //             const elevations = response.data.features.map(feature => feature.properties.ele);
@@ -470,23 +466,45 @@ const GPXMap4 = () => {
         //             return Array(batch.length).fill(null); // Or handle the error as needed
         //         }
         //     });
-    
+
         //     const elevationBatches = await Promise.all(requests);
         //     const elevations = elevationBatches.flat(); // Flatten the array of arrays
-    
+
         //     setElevationData(elevations);
         // } catch (error) {
         //     console.error('Error fetching elevations:', error);
         // }
     };
 
+	const CustomTooltip = ({ data }) => {
+		const { label, datasets } = data;
+		const tooltipContent = `
+		  <div style={{ padding: 10, border: '1px solid #ccc', borderRadius: 4 }}>
+			<div style={{ fontWeight: 'bold' }}>${label}</div>
+			<ul>
+			  ${datasets.map((dataset) => {
+				const { label: datasetLabel, dataPoint } = dataset;
+				return (
+				  <li key={datasetLabel}>
+					<span style={{ color: dataset.borderColor }}>{datasetLabel}:</span>
+					{dataPoint}
+				  </li>
+				);
+			  })}
+			</ul>
+		  </div>
+		`;
+	  
+		return tooltipContent;
+	  };
+
   const createElevationChart = async (distances, elevations, totalDistances, coordinates1, initialPosition) => {
 
     //markerRef.current = new mapboxgl.Marker().setLngLat(initialPosition).addTo(map);
-    
+
     const labelsDistances = [];
     distances.map((_, index) => {
-      labelsDistances.push(`${(index * totalDistances / distances.length).toFixed(2)} km`)      
+      labelsDistances.push(`${(index * totalDistances / distances.length).toFixed(2)} km`)
     })
 
     if (chartRef.current) {
@@ -497,61 +515,208 @@ const GPXMap4 = () => {
     const ctx = document.getElementById('elevationChart');
 
     if (ctx && distances.length > 0) {
-		const hoverLine = {
-			id: "hoverline",
-			afterDatasetsDraw(chart, args, plugins){
-				const { 
-					ctx, 
-					tooltip, 
-					chartArea: {
-						top, 
-						bottom, 
-						left, 
-						right, 
-						width, 
-						height
-					}, 
-					scales: {
-						x,
-						y
-					} 
-				} = chart;
+		const getOrCreateTooltip = (chart) => {
+			console.log("CHART", chart)
+			
+			// let tooltipEl = chart.canvas.parentNode.querySelector('div');
+		  
+			// if (!tooltipEl) {
+			//   tooltipEl = document.createElement('div');
+			//   tooltipEl.style.background = 'rgba(0, 0, 0, 0.7)';
+			//   tooltipEl.style.borderRadius = '3px';
+			//   tooltipEl.style.color = 'white';
+			//   tooltipEl.style.opacity = 1;
+			//   tooltipEl.style.pointerEvents = 'none';
+			//   tooltipEl.style.position = 'absolute';
+			//   tooltipEl.style.transform = 'translate(-50%, 0)';
+			//   tooltipEl.style.transition = 'all .1s ease';
+		  
+			//   const table = document.createElement('table');
+			//   table.style.margin = '0px';
+		  
+			//   tooltipEl.appendChild(table);
+			//   chart.canvas.parentNode.appendChild(tooltipEl);
+			// }
+			
+			// return tooltipEl;
+		  };
 
-				if(tooltip._active.length > 0 ){
-					
-					// const xCoor = tooltip.dataPoints[0].dataIndex;
-					// const yCoor = tooltip.dataPoints[0].parsed.y;
-					// console.log("xCoor", xCoor)
-					// console.log("yCoor", yCoor)
+		const externalTooltipHandler = (context) => {
+			console.log("CONTEXT", context)
+			const {chart, tooltip} = context;
+			let tooltipEl = document.getElementById('chartjs-tooltip');
+			if (!tooltipEl) {
+				tooltipEl = document.createElement('div');
+				tooltipEl.id = 'chartjs-tooltip';
+				tooltipEl.innerHTML = "<table></table>"
+				document.body.appendChild(tooltipEl);
+			}
+			// Hide if no tooltip
+			if (tooltip.opacity === 0) {
+				tooltipEl.style.opacity = 0;
+				return;
+			}
+			// Set caret Position
+			tooltipEl.classList.remove('above', 'below', 'no-transform');
+			if (tooltip.yAlign) {
+				tooltipEl.classList.add(tooltip.yAlign);
+			} else {
+				tooltipEl.classList.add('no-transform');
+			}
+			function getBody(bodyItem) {
+				return bodyItem.lines;
+			}
+			// Set Text
+			if (tooltip.body) {
+				var titleLines = tooltip.title || [];
+				var bodyLines = tooltip.body.map(getBody);
+				//PUT CUSTOM HTML TOOLTIP CONTENT HERE (innerHTML)
+				var innerHtml = '<thead>';
+				titleLines.forEach(function(title) {
+					innerHtml += '<tr><th>' + title + '</th></tr>';
+				});
+				innerHtml += '</thead><tbody>';
+				bodyLines.forEach(function(body, i) {
+					var colors = tooltip.labelColors[i];
+					var style = 'background:' + colors.backgroundColor;
+					style += '; border-color:' + colors.borderColor;
+					style += '; border-width: 2px'; 
+					var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
+					innerHtml += '<tr><td>' + span + body + '</td></tr>';
+				});
+				innerHtml += '</tbody>';
+				var tableRoot = tooltipEl.querySelector('table');
+				tableRoot.innerHTML = innerHtml;
+			}
+			var position = chart.canvas.getBoundingClientRect();
+			// Display, position, and set styles for font
+			tooltipEl.style.opacity = 1;
+			tooltipEl.style.left = position.left + tooltip.caretX + 'px';
+			tooltipEl.style.top = position.top + tooltip.caretY + 'px';
+			tooltipEl.style.fontFamily = tooltip._fontFamily;
+			tooltipEl.style.fontSize = tooltip.fontSize;
+			tooltipEl.style.fontStyle = tooltip._fontStyle;
+			tooltipEl.style.padding = tooltip.yPadding + 'px ' + tooltip.xPadding + 'px';
 
-					const xCoor = x.getPixelForValue(tooltip.dataPoints[0].dataIndex);
-					const yCoor = y.getPixelForValue(tooltip.dataPoints[0].parsed.y);
-					console.log("xCoor", xCoor)
-					console.log("yCoor", yCoor)
-					ctx.save();
-					ctx.beginPath();
-					ctx.lineWidth = 3;
-					ctx.strokeStyle = "rgb(0,0,0,1)";
-					ctx.setLineDash([6, 6])
-					ctx.moveTo(xCoor, yCoor);
-					ctx.lineTo(xCoor, bottom);
-					ctx.stroke();
-					ctx.closePath();
-					ctx.setLineDash([])
-				}
+
+			// Tooltip Element
+			// const {chart, tooltip} = context;
+			// const tooltipEl = getOrCreateTooltip(chart);
+
+			// console.log("tooltipEl", tooltipEl)
+		  
+			// // Hide if no tooltip
+			// if (tooltip.opacity === 0) {
+			//   tooltipEl.style.opacity = 0;
+			//   return;
+			// }
+		  
+			// // Set Text
+			// if (tooltip.body) {
+			//   const titleLines = tooltip.title || [];
+			//   const bodyLines = tooltip.body.map(b => b.lines);
+		  
+			//   const tableHead = document.createElement('thead');
+		  
+			//   titleLines.forEach(title => {
+			// 	const tr = document.createElement('tr');
+			// 	tr.style.borderWidth = 0;
+		  
+			// 	const th = document.createElement('th');
+			// 	th.style.borderWidth = 0;
+			// 	const text = document.createTextNode(title);
+		  
+			// 	th.appendChild(text);
+			// 	tr.appendChild(th);
+			// 	tableHead.appendChild(tr);
+			//   });
+		  
+			//   const tableBody = document.createElement('tbody');
+			//   bodyLines.forEach((body, i) => {
+			// 	const colors = tooltip.labelColors[i];
+		  
+			// 	const span = document.createElement('span');
+			// 	span.style.background = colors.backgroundColor;
+			// 	span.style.borderColor = colors.borderColor;
+			// 	span.style.borderWidth = '2px';
+			// 	span.style.marginRight = '10px';
+			// 	span.style.height = '10px';
+			// 	span.style.width = '10px';
+			// 	span.style.display = 'inline-block';
+		  
+			// 	const tr = document.createElement('tr');
+			// 	tr.style.backgroundColor = 'inherit';
+			// 	tr.style.borderWidth = 0;
+		  
+			// 	const td = document.createElement('td');
+			// 	td.style.borderWidth = 0;
+		  
+			// 	const text = document.createTextNode(body);
+		  
+			// 	td.appendChild(span);
+			// 	td.appendChild(text);
+			// 	tr.appendChild(td);
+			// 	tableBody.appendChild(tr);
+			//   });
+		  
+			//   const tableRoot = tooltipEl.querySelector('table');
+			//   console.log("TABLEROOT", tableRoot)
+		  
+			//   // Remove old children
+			//   while (tableRoot.firstChild) {
+			// 	tableRoot.firstChild.remove();
+			//   }
+		  
+			//   // Add new children
+			//   tableRoot.appendChild(tableHead);
+			//   tableRoot.appendChild(tableBody);
+			// }
+		  
+			// const {offsetLeft: positionX, offsetTop: positionY} = chart.canvas;
+		  
+			// // Display, position, and set styles for font
+			// tooltipEl.style.opacity = 1;
+			// tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+			// tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+			// tooltipEl.style.font = tooltip.options.bodyFont.string;
+			// tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
+		};
+
+		const customTooltip = (context) => {
+			console.log("CONTEXT 11", context)
+			const { chart, tooltip } = context;
+			const { ctx, canvas } = chart;
+		
+			// Custom tooltip logic
+			// You can customize the content and appearance here
+			const { body, opacity } = tooltip;
+			if (opacity === 0) {
+			  return;
 			}
-		}
-		const title = {
-			title: {
-				display: true,
-				align: 'start',
-				text: 'Elevation (m)'
-			}
-		}
+		
+			// Position of the tooltip
+			const position = chart.canvas.getBoundingClientRect();
+		
+			// Draw a white background for the tooltip
+			ctx.fillStyle = 'white';
+			ctx.strokeStyle = 'black';
+			ctx.lineWidth = 1;
+			ctx.fillRect(position.left + tooltip.caretX - 50, position.top + tooltip.caretY - 40, 100, 30);
+			ctx.strokeRect(position.left + tooltip.caretX - 50, position.top + tooltip.caretY - 40, 100, 30);
+		
+			// Draw text
+			ctx.fillStyle = 'black';
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.font = '12px Arial';
+			body.forEach((line, index) => {
+			  ctx.fillText(line.lines, position.left + tooltip.caretX, position.top + tooltip.caretY - 15 + index * 12);
+			});
+		};
+
 		chartRef.current = new Chart(ctx, {
 			type: 'line',
 			data: {
-			// labels: labelsDistances,
 			labels: labelsDistances,
 			datasets: [
 				{
@@ -565,84 +730,156 @@ const GPXMap4 = () => {
 			],
 			},
 			options: {
-			zoom: {
-				pan: {
-				enabled: true,
-				mode: 'xy', // Permitir el desplazamiento en ambos ejes
-				},
-				zoom: {
-				wheel: {
+				tooltips: {
 					enabled: true,
+					custom: CustomTooltip,
+				  },
+				interaction: {
+					mode: 'index',
+					intersect: false,
+				},				
+				onHover: (event, activeEls, chart) => {
+					const activePoints = chartRef.current.getElementsAtEventForMode(event, "nearest", {
+						intersect: false
+					});
+
+					if (activePoints.length > 0) {
+						const clickedIndex = activePoints[0].index;
+						updateChartAndMarker(clickedIndex);
+					}
 				},
-				pinch: {
-					enabled: true,
+				plugins: {
+					title: {
+						display: true,
+						// align: 'start',
+						text: 'Elevation (m)'
+					},
+					tooltip: {
+						enabled: false,
+						// position: 'nearest',
+						custom: CustomTooltip,
+						// external: customTooltip
+
+					},
 				},
-				mode: 'xy', // Permitir el zoom en ambos ejes
+				maintainAspectRatio: false,
+				responsive: false,
+				scales: {
+					x: {
+						grid: {
+							display: false
+						},
+						type: 'category',
+						labels: labelsDistances
+					},
+					y: {
+						grid: {
+							display: true
+						},
+						border:{
+							dash:function(data){
+								return data.tick.major ? null : [5, 3]
+							}
+						},
+					}
+				},
+				elements: {
+					point: {
+						radius: 0,
+					}
+				},
+				layout: {
+					padding: {
+						top: 6,
+						right: 20,
+						bottom: -10,
+						left: 20
+					}
 				}
 			},
-			onHover: (event, activeEls, chart) => {
-				const activePoints = chartRef.current.getElementsAtEventForMode(event, "nearest", {
-					intersect: true
-				});
-				if (activePoints.length > 0) {
-					const clickedIndex = activePoints[0].index;
-					updateChartAndMarker(clickedIndex);
-				}
-			},
-			// plugins: {
-			//   // legend: {
-			//   //   display: false
-			//   // },
-			//   title: {
-			//     display: true,
-			//     align: 'start',
-			//     text: 'Elevation (m)'
-			//   }
-			// },
 			plugins:[
-				hoverLine
+				{
+					id: 'corsair',
+					afterInit: (chart) => {
+						chart.corsair = {
+							x: 0,
+							y: 0
+						}
+					},
+					afterEvent: (chart, evt) => {
+						const {
+							chartArea: {
+								top,
+								bottom,
+								left,
+								right
+							}
+						} = chart;
+						const {
+							event: {
+								x,
+								y
+							}
+						} = evt;
+						if (x < left || x > right || y < top || y > bottom) {
+							chart.corsair = {
+								x,
+								draw: false
+							}
+							chart.draw();
+							return;
+						}
+
+						chart.corsair = {
+							x,
+							draw: true
+						}
+
+					  	chart.draw();
+					},
+					afterDatasetsDraw: (chart, _, opts) => {
+					  	const {
+							ctx,
+							tooltip,
+							chartArea: {
+								top,
+								bottom,
+								left,
+								right
+							}
+					  	} = chart;
+						const {
+							x,
+							y,
+							draw
+						} = chart.corsair;
+
+						if (!draw) {
+							return;
+						}
+
+						ctx.lineWidth = opts.width || 0;
+						ctx.setLineDash(opts.dash || []);
+						ctx.strokeStyle = opts.color || 'black'
+
+						ctx.save();
+						ctx.beginPath();
+						ctx.moveTo(x, bottom);
+						ctx.lineTo(x, top);
+						ctx.moveTo(left, y);
+						ctx.lineTo(right, y);
+						ctx.stroke();
+						ctx.restore();
+					}
+				}
 			],
-			maintainAspectRatio: false,
-			responsive: false,
-			scales: {
-				x: {              
-				position: 'bottom',
-				grid: {
-					display: false
-				},
-				skipNull: true,
-				},
-				y: {
-				min: 0,
-				grid: {
-					display: true
-				}
-				}
-			},
-			elements: {
-				point: {
-				radius: 0,
-				hoverRadius: 20
-				}
-			},
-			layout: {
-				padding: {
-				top: 6,
-				right: 20,
-				bottom: -10,
-				left: 20
-				}
-			}
-			}
 		});
 
-	  
+
     }
 
     const updateChartAndMarker = (clickedIndex) => {
-      console.log("clickedIndex", clickedIndex)
       const newData = coordinates1.slice(0, clickedIndex + 1);
-      console.log("newData", newData)
       // chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] }));
       //console.log("newData 1", chartRef.current.data.datasets[0].data = newData.map((coord, index) => ({ x: index, y: coord[2] })))
       chartRef.current.update();
@@ -651,13 +888,18 @@ const GPXMap4 = () => {
       markerRef.current.setLngLat(coordinates1[clickedIndex]);
     };
 
-    
+
   };
 
   return (
     <div>
         <div ref={mapContainer} style={{ height: '400px' }} />
         <h3>Total Distance (km): {totalDistance.toFixed(2)}</h3>
+		{/* <div className='tooltip'  style={{ top: tooltip.top, left: tooltip.left, opacity: tooltip.opacity }}>
+			// your tooltip jsx here, in ex.
+			<p>{ tooltip.date } </p>
+			<p>{ tooltip.value} </p>
+		</div> */}
         <canvas id="elevationChart" width="800" height="400"></canvas>
         {/* <canvas ref={chartRef} width="400" height="400" /> */}
         {/* <div ref={mapContainerRef} style={{ width: '100%', height: '400' }}>
