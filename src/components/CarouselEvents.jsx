@@ -115,7 +115,7 @@ const CarouselEvents = () => {
             name: "Titulo 4"
         },
         {
-            name: "Titulo 5"
+            name: "Titulo 5a"
         }
     ]
     return (
