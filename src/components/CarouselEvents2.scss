@@ -1,0 +1,84 @@
+.carousel {
+    width: 100vw;
+    height: 100dvh;
+    background: blue;
+    position: relative;
+    overflow: hidden;
+    background: hsla(260, 34%, 50%, 1);
+    background: linear-gradient(270deg, hsla(260, 34%, 50%, 1) 19%, hsla(0, 0%, 100%, 1) 86%, hsla(0, 0%, 100%, 1) 100%);
+    background: -moz-linear-gradient(270deg, hsla(260, 34%, 50%, 1) 19%, hsla(0, 0%, 100%, 1) 86%, hsla(0, 0%, 100%, 1) 100%);
+    background: -webkit-linear-gradient(270deg, hsla(260, 34%, 50%, 1) 19%, hsla(0, 0%, 100%, 1) 86%, hsla(0, 0%, 100%, 1) 100%);
+    .track {
+        position: absolute;
+        top: 150px;
+        left: 20px;
+        display: inline-flex;
+        touch-action: none;
+        .card {
+            width: 260px;
+            height: 500px;
+            background: #fff;
+            border-radius: 24px;
+            margin-right: 20px;
+            padding: 24px;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            background-color: rgba($color:#fff,$alpha: 0.5);
+            -webkit-border-radius: 24px;
+            -moz-border-radius: 24px;
+            -ms-border-radius: 24px;
+            -o-border-radius: 24px;
+            &.selected {
+                background-color: rgba($color: #fff, $alpha: 1.0);
+                // box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+                -webkit-transform: scaleY(1.2);
+                -moz-transform: scaleY(1.2);
+                -ms-transform: scaleY(1.2);
+                -o-transform: scaleY(1.2);
+                margin-top: -32px;
+                height: 532px;
+                .box-img {
+                    border-radius: 16px;
+                    -webkit-border-radius: 16px;
+                    -moz-border-radius: 16px;
+                    -ms-border-radius: 16px;
+                    -o-border-radius: 16px;
+                    overflow: hidden;
+                    width: 100%;
+                    height: 40vh;
+                    position: relative;
+                    img {
+                        position: absolute;
+                        left: 0;
+                        right: 0;
+                        top: 0;
+                        bottom: 0;
+                        max-width: initial;
+                       //height: 40vh;
+                        transform: translate(-20%, 0%);
+                    }
+                }
+            }
+            .box-img {
+                border-radius: 16px;
+                -webkit-border-radius: 16px;
+                -moz-border-radius: 16px;
+                -ms-border-radius: 16px;
+                -o-border-radius: 16px;
+                overflow: hidden;
+                width: 100%;
+                height: 40vh;
+                position: relative;
+                img {
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: 0;
+                    bottom: 0;
+                    max-width: initial;
+                    //height: 40vh;
+                    transform: translate(-20%, 0%);
+                }
+            }
+        }       
+    }
+}

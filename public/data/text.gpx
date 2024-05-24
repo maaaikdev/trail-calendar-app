@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<gpx version="1.1" creator="Example GPX" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Example GPX Route</name>
+    <desc>A sample GPX file for testing</desc>
+  </metadata>
+  <trk>
+    <name>Example Route</name>
+    <trkseg>
+      <trkpt lat="48.858844" lon="2.294351">
+        <ele>10</ele>
+        <time>2021-01-01T12:00:00Z</time>
+      </trkpt>
+      <trkpt lat="48.858844" lon="2.294501">
+        <ele>12</ele>
+        <time>2021-01-01T12:01:00Z</time>
+      </trkpt>
+      <trkpt lat="48.858744" lon="2.294501">
+        <ele>15</ele>
+        <time>2021-01-01T12:02:00Z</time>
+      </trkpt>
+      <trkpt lat="48.858644" lon="2.294401">
+        <ele>14</ele>
+        <time>2021-01-01T12:03:00Z</time>
+      </trkpt>
+      <trkpt lat="48.858644" lon="2.294301">
+        <ele>16</ele>
+        <time>2021-01-01T12:04:00Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
